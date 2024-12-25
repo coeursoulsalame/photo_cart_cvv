@@ -1,0 +1,15 @@
+FROM node:21.5.0-alpine
+
+WORKDIR /server
+
+COPY server/package.json ./ 
+
+RUN npm install
+
+COPY server/ .
+
+RUN chmod -R 755 ./node_modules/.bin
+
+RUN npm install -g nodemon
+
+CMD ["sh", "-c", "nodemon server.js"]

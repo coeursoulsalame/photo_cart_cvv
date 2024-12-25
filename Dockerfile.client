@@ -1,0 +1,13 @@
+FROM node:21.5.0-alpine
+
+WORKDIR /client
+
+COPY client/package.json ./ 
+
+RUN npm install
+
+COPY client/ .
+
+RUN chmod -R 755 ./node_modules/.bin
+
+CMD ["sh", "-c", "npm start"]
