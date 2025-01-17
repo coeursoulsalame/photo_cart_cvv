@@ -1,21 +1,15 @@
-import React, {useEffect} from 'react';
+import React, { useEffect } from 'react';
 import { BrowserRouter as Router, Route, Routes, Navigate, useLocation  } from 'react-router-dom';
-
-import { LicenseInfo } from '@mui/x-license-pro';
-import { ThemeProvider } from '@mui/material/styles';
+import { ConfigProvider} from "antd";
 
 import { WsProvider } from './context/ws-Context';
 import ServicePage from './components/servicePage/ServicePage';
 import ClientPage from './components/clientPage/ClientPage';
 
-import { CssBaseline } from '@mui/material';
-import theme from './theme';
-
 import { SnackbarProvider } from 'notistack';
 
-LicenseInfo.setLicenseKey(
-	'e0d9bb8070ce0054c9d9ecb6e82cb58fTz0wLEU9MzI0NzIxNDQwMDAwMDAsUz1wcmVtaXVtLExNPXBlcnBldHVhbCxLVj0y'
-);
+import locale from 'antd/locale/ru_RU';
+import 'dayjs/locale/ru.js';
 
 function ChangePageName() {
 	const location = useLocation();
@@ -34,8 +28,7 @@ function ChangePageName() {
 const App = () => {
 	
 	return (
-		<ThemeProvider theme={theme}>
-			<CssBaseline/>
+		<ConfigProvider locale={locale}>
 			<SnackbarProvider 
 				maxSnack={3}
 				anchorOrigin={{
@@ -56,7 +49,7 @@ const App = () => {
 						</Routes>
 				</Router>
 			</SnackbarProvider>	
-		</ThemeProvider>
+		</ConfigProvider>
 	);
 }
 

@@ -5,7 +5,7 @@ services:
       context: .
       dockerfile: Dockerfile.client
     ports:
-      - "4400:${REACT_PORT}"
+      - "4100:${REACT_PORT}"
     environment:
       - NODE_ENV=development
     env_file:
@@ -19,7 +19,7 @@ services:
       context: .
       dockerfile: Dockerfile.server
     ports:
-      - "3080:${EXPRESS_PORT}"
+      - "3010:${EXPRESS_PORT}"
     environment:
       - NODE_ENV=development
     env_file:

@@ -1,0 +1,76 @@
+.load-modal-photo {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+}
+
+.modal-content-photo {
+    height: 450px;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    padding: 16px 0;
+}
+
+.photo-container {
+    width: 100%;
+    max-width: 800px;
+}
+
+.photo-image {
+    max-width: 100%;
+    height: auto;
+    border-radius: 4px;
+    box-shadow: 0px 5px 46px -7px rgba(34, 60, 80, 0.2);
+}
+
+.photo-info {
+    text-align: left;
+    width: 100%;
+    max-width: 600px;
+    margin-top: 12px;
+}
+
+.photo-info .value-row {
+    margin-top: 8px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.value-input {
+    width: 60px;
+    text-align: center;
+}
+
+.modal-footer-photo {
+    display: flex;
+    justify-content: space-between;
+    padding-top: 12px;
+}
+
+.nav-button {
+    position: absolute;
+    top: 42%;
+    transform: translateY(-50%);
+    color: rgba(0, 0, 0, 0.6);
+    background: transparent;
+    border: none;
+    font-size: 36px;
+    cursor: pointer;
+}
+
+.nav-button:hover {
+    color: rgba(0, 0, 0, 0.9);
+}
+
+.prev-button {
+    left: 20px;
+}
+
+.next-button {
+    right: 20px;
+}

@@ -1,0 +1,31 @@
+/* basetable.css */
+.table-select {
+    width: 200px;
+}
+
+.modal-content-base {
+    height: 700px;
+    justify-content: normal;
+}
+
+.loading-container-base {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    text-align: center;
+    color: #555;
+}
+
+.modal-footer-base {
+    display: flex;
+    justify-content: flex-start;
+    align-items: center;
+    margin-top: 8px;
+}
+
+.rows-input {
+    width: 100px;
+    margin-right: 8px;
+}

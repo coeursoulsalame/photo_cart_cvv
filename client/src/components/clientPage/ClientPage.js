@@ -1,13 +1,16 @@
-import React from 'react';
-import { Container } from '@mui/material';
-import ClientMain from './main/ClientMain';
+import React from "react";
+import { Layout } from "antd";
+import ClientMain from "./main/ClientMain";
+
+const { Content } = Layout;
 
 const ClientPage = () => {
-
     return (
-        <Container maxWidth={false} disableGutters>
-            <ClientMain/>
-        </Container>
+        <Layout>
+            <Content>
+                <ClientMain />
+            </Content>
+        </Layout>
     );
 };
 

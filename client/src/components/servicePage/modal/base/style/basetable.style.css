@@ -1,0 +1,32 @@
+.base-table-container {
+    width: 100%;
+    padding: 16px;
+    background-color: #f9f9f9;
+    border-radius: 8px !important;
+    box-shadow: 0px 5px 53px -14px rgba(34, 60, 80, 0.15);
+}
+
+.base-table {
+    background-color: #ffffff;
+    border-radius: 8px !important;
+    box-shadow: 0px 5px 53px -14px rgba(34, 60, 80, 0.15);
+}
+
+.base-table .ant-table-thead > tr > th {
+    background-color: #fafafa;
+    font-weight: bold;
+    text-align: center;
+    white-space: nowrap;
+}
+
+.base-table .ant-table-tbody > tr > td {
+    text-align: left;
+    vertical-align: middle;
+}
+
+.no-data-message {
+    text-align: center;
+    font-size: 16px;
+    color: #888;
+    margin: 20px 0;
+}

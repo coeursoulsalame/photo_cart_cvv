@@ -1,151 +1,118 @@
-import React, { useState } from 'react';
-import { Dialog, DialogActions, DialogContent, DialogTitle, Box, Button, MenuItem, FormControl, InputLabel, Select } from '@mui/material';
-import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
-import { AdapterDayjs } from '@mui/x-date-pickers/AdapterDayjs';
-import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker'; 
-import dayjs from 'dayjs';
-import 'dayjs/locale/ru';
-import useInsertService from './hooks/useInsertService';
+import React, { useState } from "react";
+import { Modal, Form, Select, DatePicker, Button } from "antd";
+import dayjs from "dayjs";
+import useInsertService from "./hooks/useInsertService";
+import "./style/servicemodal.style.css";
 
-dayjs.locale('ru');
+const { Option } = Select;
 
-const ServiceModal = ({onClose, open}) => {
+const ServiceModal = ({ onClose, open }) => {
+    const { sendServiceData } = useInsertService();
 
-	const { sendServiceData } = useInsertService();
+    const [wagonNumber, setWagonNumber] = useState("");
+    const [serviceType, setServiceType] = useState("");
+    const [startDateTime, setStartDateTime] = useState(null);
+    const [endDateTime, setEndDateTime] = useState(null);
 
-	const [wagonNumber, setWagonNumber] = useState('');
-	const [serviceType, setServiceType] = useState('');
-	const [startDateTime, setStartDateTime] = useState(null);
-	const [endDateTime, setEndDateTime] = useState(null);
+    const handleSubmit = async () => {
+        const selectedServiceType = serviceTypes.find((service) => service.id === serviceType);
+        const serviceTypeId = selectedServiceType ? selectedServiceType.id : null;
 
-	const handleWagonNumberChange = (event) => {
-		setWagonNumber(event.target.value);
-	};
+        try {
+            const response = await sendServiceData(
+                wagonNumber,
+                startDateTime ? dayjs(startDateTime).format("DD.MM.YYYY HH:mm") : "",
+                endDateTime ? dayjs(endDateTime).format("DD.MM.YYYY HH:mm") : "",
+                serviceTypeId
+            );
+            console.log("Ответ от сервера:", response);
+            onClose();
+        } catch (error) {
+            console.error(error);
+        }
+    };
 
-	const handleServiceTypeChange = (event) => {
-		setServiceType(event.target.value);
-	};
+    const wagonNumbers = Array.from({ length: 99 }, (_, index) => ({
+        id: String(index + 1).padStart(2, "0"),
+        label: `${String(index + 1).padStart(2, "0")}`,
+    }));
 
-	const handleSubmit = async () => {
-		const selectedServiceType = serviceTypes.find((service) => service.id === serviceType);
+    const serviceTypes = [
+        { id: 1, label: "Осмотр" },
+        { id: 2, label: "Замена подшипников" },
+        { id: 3, label: "Аварийная замена подшипников" },
+    ];
 
-		const serviceTypeId = selectedServiceType ? selectedServiceType.id : null;
+    return (
+        <Modal
+            title="Форма обслуживания"
+            open={open}
+            onCancel={onClose}
+            footer={null}
+            centered
+        >
+            <Form layout="vertical">
+                <Form.Item label="Номер вагонетки">
+                    <Select
+                        value={wagonNumber}
+                        onChange={(value) => setWagonNumber(value)}
+                        placeholder="Выберите номер вагонетки"
+                        className="service-select"
+                    >
+                        {wagonNumbers.map((wagon) => (
+                            <Option key={wagon.id} value={wagon.id}>
+                                {wagon.label}
+                            </Option>
+                        ))}
+                    </Select>
+                </Form.Item>
 
-		try {
-		const response = await sendServiceData(
-			wagonNumber,
-			startDateTime ? dayjs(startDateTime).format('DD.MM.YYYY HH:mm') : '',
-			endDateTime ? dayjs(endDateTime).format('DD.MM.YYYY HH:mm') : '',
-			serviceTypeId
-		);
-			console.log('Ответ от сервера:', response);
-			onClose();
-		} catch (error) {
-			console.error(error);
-		}
-	};
+                <Form.Item label="Дата начала">
+                    <DatePicker
+                        showTime
+                        value={startDateTime}
+                        onChange={(value) => setStartDateTime(value)}
+                        format="DD.MM.YYYY HH:mm"
+                        className="service-datepicker"
+                    />
+                </Form.Item>
 
-	const wagonNumbers = Array.from({ length: 99 }, (_, index) => ({
-		id: String(index + 1).padStart(2, '0'),
-		label: `${String(index + 1).padStart(2, '0')}`,
-	}));
+                <Form.Item label="Дата окончания">
+                    <DatePicker
+                        showTime
+                        value={endDateTime}
+                        onChange={(value) => setEndDateTime(value)}
+                        format="DD.MM.YYYY HH:mm"
+                        className="service-datepicker"
+                    />
+                </Form.Item>
 
-	const serviceTypes = [
-		{ id: 1, label: 'Осмотр' },
-		{ id: 2, label: 'Замена подшипников' },
-		{ id: 3, label: 'Аварийная замена подшипников' },
-	];
+                <Form.Item label="Вариант обслуживания">
+                    <Select
+                        value={serviceType}
+                        onChange={(value) => setServiceType(value)}
+                        placeholder="Выберите вариант обслуживания"
+                        className="service-select"
+                    >
+                        {serviceTypes.map((service) => (
+                            <Option key={service.id} value={service.id}>
+                                {service.label}
+                            </Option>
+                        ))}
+                    </Select>
+                </Form.Item>
 
-	return (
-		<Dialog open={open} onClose={onClose}>
-			<DialogTitle id="service-modal-title">Форма обслуживания</DialogTitle>
-			<DialogContent>
-				<Box sx={{ width: 400, padding: 2 }}>
-					<FormControl fullWidth sx={{ mb: 4 }} size="small">
-						<InputLabel id="wagon-number-label">Номер вагонетки</InputLabel>
-						<Select
-							labelId="wagon-number-label"
-							value={wagonNumber}
-							onChange={handleWagonNumberChange}
-							label="Номер вагонетки"
-							MenuProps={{
-								PaperProps: {
-								style: {
-									maxHeight: 300,
-									overflow: 'auto',
-								},
-								},
-							}}
-						>
-						{wagonNumbers.map((wagon) => (
-							<MenuItem key={wagon.id} value={wagon.id}>
-								{wagon.label}
-							</MenuItem>
-						))}
-						</Select>
-					</FormControl>
-
-					<LocalizationProvider dateAdapter={AdapterDayjs} adapterLocale="ru">
-						<DateTimePicker
-							label="Дата начала"
-							value={startDateTime}
-							onChange={(newValue) => setStartDateTime(newValue)}
-							slotProps={{
-								textField: {
-								fullWidth: true,
-								size: 'small',
-								sx: { mb: 4 },
-								},
-								popper: {
-								container: document.body, 
-								},
-							}}
-						/>
-						<DateTimePicker
-							label="Дата окончания"
-							value={endDateTime}
-							onChange={(newValue) => setEndDateTime(newValue)}
-							slotProps={{
-								textField: {
-                                    fullWidth: true,
-                                    size: 'small',
-								    sx: { mb: 4 },
-								},
-								popper: {
-                                    container: document.body, 
-								},
-							}}
-						/>
-					</LocalizationProvider>
-
-					<FormControl fullWidth sx={{ mb: 4 }} size="small">
-						<InputLabel id="service-type-label">Вариант обслуживания</InputLabel>
-						<Select
-							labelId="service-type-label"
-							value={serviceType}
-							onChange={handleServiceTypeChange}
-							label="Вариант обслуживания"
-							>
-							{serviceTypes.map((service) => (
-								<MenuItem key={service.id} value={service.id}>
-									{service.label}
-								</MenuItem>
-							))}
-						</Select>
-					</FormControl>
-				</Box>
-			</DialogContent>
-
-			<DialogActions>
-				<Button variant="outlined" onClick={onClose}>
-				Закрыть
-				</Button>
-				<Button variant="contained" color="success" onClick={handleSubmit}>
-				Сохранить
-				</Button>
-			</DialogActions>
-		</Dialog>
-	);
+                <div className="service-modal-actions">
+                    <Button onClick={onClose} className="cancel-button">
+                        Закрыть
+                    </Button>
+                    <Button type="primary" onClick={handleSubmit} className="submit-button">
+                        Сохранить
+                    </Button>
+                </div>
+            </Form>
+        </Modal>
+    );
 };
 
 export default ServiceModal;

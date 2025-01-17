@@ -8,6 +8,4 @@ RUN npm install
 
 COPY client/ .
 
-RUN chmod -R 755 ./node_modules/.bin
-
 CMD ["sh", "-c", "npm start"]

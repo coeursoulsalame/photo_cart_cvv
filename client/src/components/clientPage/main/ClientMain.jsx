@@ -1,15 +1,17 @@
-import React, {useState} from 'react';
-import { Container, Button, Box } from '@mui/material';
-import ServiceModal from '../modal/service/ServiceModal';
+import React, { useState } from "react";
+import { Layout, Button, Space } from "antd";
+import ServiceModal from "../modal/service/ServiceModal";
+import { useSnackbar } from "notistack"; // временно
+import "./style/clientmain.style.css";
 
-import { useSnackbar } from 'notistack';  // временно
+const { Content } = Layout;
 
 const ClientMain = () => {
     const [serviceModalOpen, setServiceModalOpen] = useState(false);
-    const { enqueueSnackbar } = useSnackbar(); //временный стейт
+    const { enqueueSnackbar } = useSnackbar(); // временный стейт
 
     const handleRepairClick = () => {
-        enqueueSnackbar('Функционал в разработке', { variant: 'error' });  // на время разработки
+        enqueueSnackbar("Функционал в разработке", { variant: "error" }); // на время разработки
     };
 
     const modalOpen = () => {
@@ -20,66 +22,26 @@ const ClientMain = () => {
         setServiceModalOpen(false);
     };
 
-    console.log('render');
-    
     return (
-        <>
-            <Container
-                maxWidth={false}
-                disableGutters
-                sx={{
-                    width: '100%', 
-                    height: '100vh',  
-                }}
-            >
-                <Box
-                    sx={{
-                        display: 'flex', 
-                        justifyContent: 'center', 
-                        alignItems: 'center', 
-                        height: '100%', 
-                        flexDirection: 'row', 
-                    }}
-                >
-                    <Button
-                        size='large'
-                        variant="contained" 
-                        onClick={modalOpen}
-                        color="success"
-                        sx={{ p: 3, fontSize: '2rem' }}
-                    >
+        <Layout className="client-main-layout">
+            <Content className="client-main-content">
+                <Space size="large" align="center">
+                    <Button type="primary" size="large" className="main-button" onClick={modalOpen}>
                         Обслуживание вагонеток
                     </Button>
 
-                    <Button
-                        size='large'
-                        variant="contained" 
-                        sx={{ ml: 2, p: 3, fontSize: '2rem' }} 
-                        color="success"
-                        onClick={handleRepairClick} 
-                    >
+                    <Button type="primary" size="large" className="main-button" onClick={handleRepairClick}>
                         Вывести в ремонт
                     </Button>
 
-                    <Button
-                        size='large'
-                        variant="outlined"
-                        sx={{ ml: 2, p: 3, fontSize: '2rem' }} 
-                        color="primary"
-                        component="a" 
-                        href="/service"  
-                        rel="noopener noreferrer"
-                    >
+                    <Button type="default" size="large" className="main-button" href="/service" rel="noopener noreferrer">
                         Администрирование
                     </Button>
-                </Box>
-            </Container>
+                </Space>
+            </Content>
 
-            <ServiceModal
-                open={serviceModalOpen}
-                onClose={modalClose}
-            />
-        </>
+            <ServiceModal open={serviceModalOpen} onClose={modalClose} />
+        </Layout>
     );
 };
 

@@ -1,19 +1,17 @@
-import React, { useEffect, useState } from 'react';
-import { Dialog, DialogTitle, DialogContent, DialogActions, IconButton, Box, Typography, CircularProgress, Button, TextField } from '@mui/material';
-import CloseIcon from '@mui/icons-material/Close';
-import DeleteIcon from '@mui/icons-material/Delete';
-import ArrowBackIosIcon from '@mui/icons-material/ArrowBackIos';
-import ArrowForwardIosIcon from '@mui/icons-material/ArrowForwardIos';
-import EditIcon from '@mui/icons-material/Edit';
-import useGetPhotoInfo from './hooks/useGetPhotoInfo';
-import useNavKeyboard from './hooks/useNavKeyboard';
-import useUpdateValue from './hooks/useUpdateValue';
+import React, { useEffect, useState } from "react";
+import { Modal, Typography, Button, Spin, Input, Row, Col } from "antd";
+import { LeftOutlined, RightOutlined, EditOutlined, DeleteOutlined } from "@ant-design/icons";
+import useGetPhotoInfo from "./hooks/useGetPhotoInfo";
+import useNavKeyboard from "./hooks/useNavKeyboard";
+import useUpdateValue from "./hooks/useUpdateValue";
+import ConfirmDelete from "./ConfirmDelete";
+import "./style/photomodal.style.css";
 
-import ConfirmDelete from './ConfirmDelete';
+const { Text } = Typography;
 
 const PhotoModal = ({ open, photo, onClose, photos, setSelectedPhotoIndex, GalleryValueUpdate }) => {
     const { photoData, loadPhotoInfo, valueInputRef } = useGetPhotoInfo(photo?.name);
-    const [ loading, setLoading ] = useState(true);
+    const [loading, setLoading] = useState(true);
     const { editedValue, setEditedValue, updateValue } = useUpdateValue(photo?.name, photoData?.value);
     const { onNext, onPrev } = useNavKeyboard(open, setSelectedPhotoIndex, photos.length);
     const [confirmOpen, setConfirmOpen] = useState(false);
@@ -28,13 +26,13 @@ const PhotoModal = ({ open, photo, onClose, photos, setSelectedPhotoIndex, Galle
     const setValue = async () => {
         try {
             const upd = await updateValue();
-            if(upd) {
+            if (upd) {
                 GalleryValueUpdate(photo.name, editedValue);
             }
-        } catch(error) {
+        } catch (error) {
             console.log(error);
         }
-    }
+    };
 
     const confirmDeleteOpen = () => {
         setConfirmOpen(true);
@@ -48,93 +46,65 @@ const PhotoModal = ({ open, photo, onClose, photos, setSelectedPhotoIndex, Galle
 
     return (
         <>
-            <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
-                <DialogTitle sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }} component="div">
-                    <Typography variant="h6" component="h2">{photo.name}</Typography>
-                    <IconButton
-                        onClick={onClose}
-                        sx={{ color: 'grey.500' }}
-                    >
-                        <CloseIcon />
-                    </IconButton>
-                </DialogTitle>
-
-                <DialogContent>
-                    <Box sx={{ position: 'relative', overflow: 'auto', margin: 'auto', textAlign: 'center', height: 520}}>
-                        {loading ? (
-                            <Box sx={{height:'100%', display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-                                <CircularProgress size={25} sx={{color: 'green'}}/>
-                            </Box>
-                        ) : (
-                            <Box>
-                                <Box sx={{minHeight:'420px'}}>
-                                    <IconButton
-                                        onClick={onPrev}
-                                        sx={{ position: 'absolute', top: '40%', left: 15, transform: 'translateY(-50%)', color: 'white' }}
-                                    >
-                                        <ArrowBackIosIcon />
-                                    </IconButton>
-                                    <img src={photo.fullSrc} alt={photo.name} style={{ width: '100%', height: 'auto', borderRadius: '4px' }} />
-                                    <IconButton
-                                        onClick={onNext}
-                                        sx={{ position: 'absolute', top: '40%', right: 15, transform: 'translateY(-50%)', color: 'white' }}
-                                    >
-                                        <ArrowForwardIosIcon />
-                                    </IconButton>
-                                </Box>
-                                <Box sx={{ textAlign: 'left', marginTop: 2 }}>
-                                    <Typography variant="h6">
-                                        Предсказание: {photoData.pred || ''}
-                                    </Typography>
-                                    <Box sx={{ display: 'flex', alignItems: 'center'}}>
-                                        <Typography variant="body1">
-                                            Фактическое значение: 
-                                        </Typography>
-                                        <TextField
+            <Modal
+                open={open}
+                onCancel={onClose}
+                footer={null}
+                width={800}
+                centered
+                title={photo.name}
+            >
+                <div className="modal-content-photo">
+                    {loading ? (
+                        <div className="load-modal-photo">
+                            <Spin size="large"/>
+                        </div>
+                    ) : (
+                        <div className="photo-container">
+                            <Button type="text" icon={<LeftOutlined />} onClick={onPrev} className="nav-button prev-button"/>
+                            <img src={photo.fullSrc} alt={photo.name} className="photo-image" />
+                            <Button
+                                type="text"
+                                icon={<RightOutlined />}
+                                onClick={onNext}
+                                className="nav-button next-button"
+                            />
+                            <div className="photo-info">
+                                <Text>Предсказание: {photoData.pred || ""}</Text>
+                                <Row align="middle" gutter={8} className="value-row">
+                                    <Col>
+                                        <Text>Фактическое значение:</Text>
+                                    </Col>
+                                    <Col>
+                                        <Input
                                             size="small"
                                             value={editedValue}
-                                            inputRef={valueInputRef}
+                                            ref={valueInputRef}
                                             onChange={(e) => setEditedValue(e.target.value)}
-                                            onKeyDown={(e) => {
-                                                if (e.key === 'Enter') {
-                                                    setValue(); 
-                                                }
-                                            }}
-                                            slotProps={{
-                                                htmlInput: {
-                                                    maxLength: 2,
-                                                },
-                                            }}
-                                            sx={{ width: '60px', ml: 1,mr: 1 }}
+                                            onPressEnter={setValue}
+                                            maxLength={2}
+                                            className="value-input"
                                         />
-                                        <Button variant="contained" color="success" onClick={setValue} startIcon={<EditIcon />} size="small" sx={{ml:2}}>
+                                    </Col>
+                                    <Col>
+                                        <Button type="primary" icon={<EditOutlined />} onClick={setValue}>
                                             Изменить
                                         </Button>
-                                    </Box>
-                                </Box>
-                            </Box>
-                        )}
-                    </Box>
-                </DialogContent>
-
-                <DialogActions sx={{ justifyContent: 'space-between' }}>
-                    <Button
-                        variant="contained"
-                        color="error"
-                        startIcon={<DeleteIcon />}
-                        onClick={confirmDeleteOpen}
-                    >
+                                    </Col>
+                                </Row>
+                            </div>
+                        </div>
+                    )}
+                </div>
+                <div className="modal-footer-photo">
+                    <Button type="primary" danger icon={<DeleteOutlined />} onClick={confirmDeleteOpen}>
                         Удалить
                     </Button>
-                    <Button
-                        variant="contained"
-                        color="success"
-                        onClick={onClose}
-                    >
+                    <Button type="primary" onClick={onClose}>
                         Закрыть
                     </Button>
-                </DialogActions>
-            </Dialog>
+                </div>
+            </Modal>
 
             <ConfirmDelete
                 open={confirmOpen}

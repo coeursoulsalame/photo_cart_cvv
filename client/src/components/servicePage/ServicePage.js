@@ -1,15 +1,19 @@
 import React from 'react';
-import { Container } from '@mui/material';
+import { Layout } from "antd";
 import Header from './header/Header';
 import Gallery from './gallery/Gallery';
+
+const { Content } = Layout;
 
 const ServicePage = () => {
     
     return (
-        <Container maxWidth={false} disableGutters>
-            <Header/>
-            <Gallery/>
-        </Container>
+        <Layout>
+            <Content>
+                <Header/>
+                <Gallery/>
+            </Content>
+        </Layout>
     );
 };
 

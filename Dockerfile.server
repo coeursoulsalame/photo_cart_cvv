@@ -8,8 +8,6 @@ RUN npm install
 
 COPY server/ .
 
-RUN chmod -R 755 ./node_modules/.bin
-
 RUN npm install -g nodemon
 
 CMD ["sh", "-c", "nodemon server.js"]
