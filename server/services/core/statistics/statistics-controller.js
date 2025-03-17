@@ -41,6 +41,10 @@ class StatisticsController {
                                     } else {
                                         console.error("Detection column does not contain valid JSON:", row.detection);
                                     }
+                                } else if (typeof row.detection === "number") {
+                                    row.detection = [row.detection];
+                                } else if (typeof row.detection === "object") {
+                                    //  оставляем как есть
                                 } else {
                                     console.error("Unexpected detection data type:", typeof row.detection);
                                 }
