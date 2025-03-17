@@ -1,9 +1,7 @@
-// server/services/serviceInitializer.js
 const db = require('../../config/db');
 const { minioClient } = require('../../config/minio');
 const bucketName = process.env.MINIO_BUCKET_NAME;
 
-// Импорт классов сервисов
 const DatabaseCheck = require('./notification/database-check');
 const PhotoController = require('./photo/photo-controller');
 const PhotoService = require('./photo/photo-service');
