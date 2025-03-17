@@ -1,5 +1,5 @@
 import React from "react";
-import { Modal, Button, Typography } from "antd";
+import { Modal, Button, Typography, Flex, Space } from "antd";
 import { useDeleteConfirm } from "./hooks/useDeleteConfirm";
 
 const ConfirmDelete = ({ open, name, onClose }) => {
@@ -12,19 +12,19 @@ const ConfirmDelete = ({ open, name, onClose }) => {
             footer={null}
             title={`Вы уверены, что хотите удалить фотографию?`}
             centered
-            className="confirm-delete-modal"
         >
-            <div className="modal-content-delete">
+            <Space direction="vertical" size="large" style={{ width: '100%' }}>
                 <Typography.Text>{name}</Typography.Text>
-            </div>
-            <div className="modal-footer">
-                <Button onClick={onClose} type="default">
-                    Нет
-                </Button>
-                <Button onClick={onConfirm} type="primary" danger>
-                    Да
-                </Button>
-            </div>
+                
+                <Flex justify="end" gap="small">
+                    <Button onClick={onClose} type="default">
+                        Нет
+                    </Button>
+                    <Button onClick={onConfirm} type="primary" danger>
+                        Да
+                    </Button>
+                </Flex>
+            </Space>
         </Modal>
     );
 };

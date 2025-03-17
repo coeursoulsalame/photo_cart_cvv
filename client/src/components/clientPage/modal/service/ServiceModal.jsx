@@ -1,115 +1,128 @@
-import React, { useState } from "react";
-import { Modal, Form, Select, DatePicker, Button } from "antd";
+import React from "react";
+import { Modal, Form, Select, DatePicker, Button, Flex, Divider } from "antd";
 import dayjs from "dayjs";
 import useInsertService from "./hooks/useInsertService";
-import "./style/servicemodal.style.css";
 
 const { Option } = Select;
 
+const WAGON_NUMBERS = Array.from({ length: 99 }, (_, index) => ({
+    id: String(index + 1).padStart(2, "0"),
+    label: `${String(index + 1).padStart(2, "0")}`,
+}));
+
+const SERVICE_TYPES = [
+    { id: 1, label: "Осмотр" },
+    { id: 2, label: "Замена подшипников" },
+    { id: 3, label: "Аварийная замена подшипников" },
+];
+
 const ServiceModal = ({ onClose, open }) => {
     const { sendServiceData } = useInsertService();
-
-    const [wagonNumber, setWagonNumber] = useState("");
-    const [serviceType, setServiceType] = useState("");
-    const [startDateTime, setStartDateTime] = useState(null);
-    const [endDateTime, setEndDateTime] = useState(null);
-
+    const [form] = Form.useForm();
+    
+    const formatDateTime = (dateTime) => dateTime ? dayjs(dateTime).format("DD.MM.YYYY HH:mm") : "";
+  
     const handleSubmit = async () => {
-        const selectedServiceType = serviceTypes.find((service) => service.id === serviceType);
-        const serviceTypeId = selectedServiceType ? selectedServiceType.id : null;
-
         try {
-            const response = await sendServiceData(
+            const values = await form.validateFields();
+            const { wagonNumber, serviceType, startDateTime, endDateTime } = values;
+            
+            const result = await sendServiceData(
                 wagonNumber,
-                startDateTime ? dayjs(startDateTime).format("DD.MM.YYYY HH:mm") : "",
-                endDateTime ? dayjs(endDateTime).format("DD.MM.YYYY HH:mm") : "",
-                serviceTypeId
+                formatDateTime(startDateTime),
+                formatDateTime(endDateTime),
+                serviceType
             );
-            console.log("Ответ от сервера:", response);
-            onClose();
+            
+            if (result) {
+                form.resetFields();
+                onClose();
+            }
         } catch (error) {
-            console.error(error);
+
         }
     };
-
-    const wagonNumbers = Array.from({ length: 99 }, (_, index) => ({
-        id: String(index + 1).padStart(2, "0"),
-        label: `${String(index + 1).padStart(2, "0")}`,
-    }));
-
-    const serviceTypes = [
-        { id: 1, label: "Осмотр" },
-        { id: 2, label: "Замена подшипников" },
-        { id: 3, label: "Аварийная замена подшипников" },
-    ];
+  
+    const handleCancel = () => {
+        form.resetFields();
+        onClose();
+    };
 
     return (
         <Modal
-            title="Форма обслуживания"
+            title={<h4>Форма обслуживания</h4>}
             open={open}
-            onCancel={onClose}
+            onCancel={handleCancel}
             footer={null}
             centered
         >
-            <Form layout="vertical">
-                <Form.Item label="Номер вагонетки">
-                    <Select
-                        value={wagonNumber}
-                        onChange={(value) => setWagonNumber(value)}
-                        placeholder="Выберите номер вагонетки"
-                        className="service-select"
-                    >
-                        {wagonNumbers.map((wagon) => (
-                            <Option key={wagon.id} value={wagon.id}>
-                                {wagon.label}
-                            </Option>
+            <Divider style={{ margin: 16, marginLeft: 0, marginRight: 0 }} />
+            <Form 
+                form={form} 
+                layout="vertical"
+                initialValues={{
+                    wagonNumber: undefined,
+                    serviceType: undefined,
+                    startDateTime: null,
+                    endDateTime: null
+                }}
+            >
+                <Form.Item 
+                    name="wagonNumber"
+                    label="Номер вагонетки"
+                    rules={[{ required: true, message: 'Пожалуйста, выберите номер вагонетки' }]}
+                >
+                    <Select placeholder="Выберите номер вагонетки">
+                        {WAGON_NUMBERS.map(({ id, label }) => (
+                        <Option key={id} value={id}>{label}</Option>
                         ))}
                     </Select>
                 </Form.Item>
 
-                <Form.Item label="Дата начала">
+                <Form.Item 
+                    name="startDateTime"
+                    label="Дата начала"
+                    rules={[{ required: true, message: 'Пожалуйста, выберите дату начала' }]}
+                >
                     <DatePicker
                         showTime
-                        value={startDateTime}
-                        onChange={(value) => setStartDateTime(value)}
                         format="DD.MM.YYYY HH:mm"
-                        className="service-datepicker"
+                        style={{ width: '100%' }}
                     />
                 </Form.Item>
 
-                <Form.Item label="Дата окончания">
+                <Form.Item 
+                    name="endDateTime"
+                    label="Дата окончания"
+                    rules={[{ required: true, message: 'Пожалуйста, выберите дату окончания' }]}
+                >
                     <DatePicker
                         showTime
-                        value={endDateTime}
-                        onChange={(value) => setEndDateTime(value)}
                         format="DD.MM.YYYY HH:mm"
-                        className="service-datepicker"
+                        style={{ width: '100%' }}
                     />
                 </Form.Item>
 
-                <Form.Item label="Вариант обслуживания">
-                    <Select
-                        value={serviceType}
-                        onChange={(value) => setServiceType(value)}
-                        placeholder="Выберите вариант обслуживания"
-                        className="service-select"
-                    >
-                        {serviceTypes.map((service) => (
-                            <Option key={service.id} value={service.id}>
-                                {service.label}
-                            </Option>
+                <Form.Item 
+                    name="serviceType"
+                    label="Вариант обслуживания"
+                    rules={[{ required: true, message: 'Пожалуйста, выберите вариант обслуживания' }]}
+                >
+                    <Select placeholder="Выберите вариант обслуживания">
+                        {SERVICE_TYPES.map(({ id, label }) => (
+                        <Option key={id} value={id}>{label}</Option>
                         ))}
                     </Select>
                 </Form.Item>
 
-                <div className="service-modal-actions">
-                    <Button onClick={onClose} className="cancel-button">
+                <Flex justify="end" gap="small">
+                    <Button onClick={handleCancel}>
                         Закрыть
                     </Button>
-                    <Button type="primary" onClick={handleSubmit} className="submit-button">
+                    <Button type="primary" onClick={handleSubmit}>
                         Сохранить
                     </Button>
-                </div>
+                </Flex>
             </Form>
         </Modal>
     );

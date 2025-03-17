@@ -1,23 +1,21 @@
 import axios from 'axios';
 import { useCallback, useContext } from 'react';
 import { WsEventContext } from '../../../../../context/ws-Context';
-import { useSnackbar } from 'notistack';
-
+import { message } from 'antd';
 export const useDeleteConfirm = (name, closeConfirmModal) => {
     const { removePhoto } = useContext(WsEventContext);
-    const { enqueueSnackbar } = useSnackbar();
 
     const onConfirm = useCallback(async () => {
         try {
             await axios.post('/api/photos/delete-photo', { name });
             removePhoto(name);
             closeConfirmModal();
-            enqueueSnackbar('Фотография удалена', { variant: 'success' });
+            message.success('Фотография удалена');
         } catch (error) {
             console.log(error);
-            enqueueSnackbar('Ошибка при удалении фотографии', { variant: 'success' });
+            message.error('Ошибка при удалении фотографии');
         }
-    }, [name, removePhoto, closeConfirmModal, enqueueSnackbar]);
+    }, [name, removePhoto, closeConfirmModal]);
 
     return { onConfirm };
 };

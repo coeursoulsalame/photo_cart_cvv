@@ -1,9 +1,7 @@
 import axios from "axios";
-import { useSnackbar } from 'notistack';
+import { message } from "antd";
 
 const useInsertService = () => {
-    const { enqueueSnackbar } = useSnackbar();
-
     const sendServiceData = async (wagonNumber, startDate, endDate, serviceOption) => {
         try {
             const response = await axios.post('/api/service/insert', {
@@ -12,11 +10,10 @@ const useInsertService = () => {
                 end_date: endDate,
                 option: serviceOption,
             });
-            enqueueSnackbar('Запись успешно сохранена', { variant: 'success' })
+            message.success('Запись успешно сохранена');
             return response;
-        } catch (error) {
-            console.log(error);   
-            enqueueSnackbar('Ошибка при сохранении записи', { variant: 'error' })
+        } catch (err) {  
+            message.error('Ошибка при сохранении записи');
         }
     };
 

@@ -1,11 +1,10 @@
 import { useState, useCallback, useRef, useEffect } from 'react';
 import axios from 'axios';
-import { useSnackbar } from 'notistack';
+import { message } from 'antd';
 
 const useGetPhotoInfo = (photoName) => {
     const [photoData, setPhotoData] = useState(null);
     const valueInputRef = useRef(null);
-    const { enqueueSnackbar } = useSnackbar();
 
     const loadPhotoInfo = useCallback(async () => {
         if (!photoName) return;
@@ -16,15 +15,15 @@ const useGetPhotoInfo = (photoName) => {
             console.log(response.data);
 
             if (response.status === 404) {
-                enqueueSnackbar('Не удалось открыть информацию о фото', { variant: 'error' });
+                message.error('Не удалось открыть информацию о фото');
             } else {
                 setPhotoData(response.data);
             }
         } catch (error) {
             console.log(error);
-            enqueueSnackbar('Ошибка при открытии модального окна', { variant: 'error' });
+            message.error('Ошибка при открытии модального окна');
         }
-    }, [photoName, enqueueSnackbar]);
+    }, [photoName]);
 
     useEffect(()=>{
         if (valueInputRef.current) {

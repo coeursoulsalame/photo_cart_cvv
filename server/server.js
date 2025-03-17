@@ -4,7 +4,7 @@ const express = require('express');
 const cookieParser = require('cookie-parser');
 const cors = require('cors');
 const configureRoutes = require('./routes');
-const setupWebSocketServer = require('./ws/wsServer'); 
+const { setupWebSocketWithServices } = require('./services/websocket/serviceInitializer');
 
 const app = express();
 const PORT = process.env.EXPRESS_PORT;
@@ -25,4 +25,4 @@ const server = app.listen(PORT, () => {
 	console.log(`EXPRESS_PORT from .env: ${PORT}`);
 });
 
-setupWebSocketServer(server);
+setupWebSocketWithServices(server);

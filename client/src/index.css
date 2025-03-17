@@ -1,4 +1,17 @@
-* {
-    margin: 0;
-    padding: 0;
+@font-face {
+    font-family: 'Manrope';
+    src: url('../public/fonts/Manrope-VariableFont_wght.ttf') format('truetype');
+    font-weight: 500 800;
+    font-style: normal;
+}
+
+.ant-table-header,
+.ant-table-cell {
+    border-radius: 0px !important;
+}
+
+.ant-table-container {
+    border-start-start-radius: 0px !important;
+    border-start-end-radius: 0px !important;
+    border-bottom: 1px solid #e6e6e8 !important;
 }

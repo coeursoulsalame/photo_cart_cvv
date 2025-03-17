@@ -1,11 +1,8 @@
-// hooks/useUpdateValue.js
-
 import axios from 'axios';
 import { useCallback, useState, useEffect } from 'react';
-import { useSnackbar } from 'notistack';
+import { message } from 'antd';
 
 const useUpdateValue = (fileName, value) => {
-    const { enqueueSnackbar } = useSnackbar();
     const [editedValue, setEditedValue] = useState('');
 
     useEffect(() => {
@@ -20,14 +17,14 @@ const useUpdateValue = (fileName, value) => {
                 fileName,
                 value: editedValue,
             });
-            enqueueSnackbar('Значение обновлено', { variant: 'success' });
+            message.success('Значение обновлено');
             return response.data;
         } catch (error) {
-            enqueueSnackbar('Ошибка при обновлении', { variant: 'error' });
+            message.error('Ошибка при обновлении');
             console.error('Ошибка при обновлении значения:', error);
             throw error;
         }
-    }, [enqueueSnackbar, fileName, editedValue]);
+    }, [fileName, editedValue]);
 
     return { editedValue, setEditedValue, updateValue };
 };
