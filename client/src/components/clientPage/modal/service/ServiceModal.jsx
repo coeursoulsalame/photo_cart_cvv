@@ -14,6 +14,7 @@ const SERVICE_TYPES = [
     { id: 1, label: "Осмотр" },
     { id: 2, label: "Замена подшипников" },
     { id: 3, label: "Аварийная замена подшипников" },
+    { id: 4, label: "Ремонт зацепного устройства" },
 ];
 
 const ServiceModal = ({ onClose, open }) => {
