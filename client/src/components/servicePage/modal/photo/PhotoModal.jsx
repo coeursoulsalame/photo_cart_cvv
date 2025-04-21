@@ -160,6 +160,10 @@ const PhotoModal = ({ open, photo, onClose, photos, setSelectedPhotoIndex, Galle
                                             <p>Предсказание:</p>
                                             <p>{photoData.pred || "Нет данных"}</p>
                                         </Flex>
+                                        <Flex justify="space-between">
+                                            <p>Распознанное:</p>
+                                            <p>{photoData.confidence_score || "Нет данных"}</p>
+                                        </Flex>
                                     </Space>
                                 </Card>
                                 
