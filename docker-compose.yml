@@ -19,7 +19,7 @@ services:
       context: .
       dockerfile: Dockerfile.server
     ports:
-      - "3010:${EXPRESS_PORT}"
+      - "3010:${NEST_PORT}"
     environment:
       - NODE_ENV=development
     env_file:

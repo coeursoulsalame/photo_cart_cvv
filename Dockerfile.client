@@ -1,5 +1,8 @@
 FROM node:21.5.0-alpine
 
+RUN apk add --no-cache tzdata
+ENV TZ=Asia/Krasnoyarsk
+
 WORKDIR /client
 
 COPY client/package.json ./ 
@@ -8,4 +11,4 @@ RUN npm install
 
 COPY client/ .
 
-CMD ["sh", "-c", "npm start"]
+CMD ["sh", "-c", "export TZ=Asia/Krasnoyarsk && npm start"]

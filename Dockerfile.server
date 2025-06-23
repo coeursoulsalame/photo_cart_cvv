@@ -1,5 +1,8 @@
 FROM node:21.5.0-alpine
 
+RUN apk add --no-cache tzdata
+ENV TZ=Asia/Krasnoyarsk
+
 WORKDIR /server
 
 COPY server/package.json ./ 
@@ -8,6 +11,4 @@ RUN npm install
 
 COPY server/ .
 
-RUN npm install -g nodemon
-
-CMD ["sh", "-c", "nodemon server.js"]
+CMD ["sh", "-c", "export TZ=Asia/Krasnoyarsk && npm run start:dev"]
