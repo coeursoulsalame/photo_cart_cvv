@@ -1,4 +1,4 @@
-import { Table, Card } from 'antd';
+import { Table, Card, Layout } from 'antd';
 import type { ColumnsType } from 'antd/es/table';
 import useBaseTable from './hooks/useBaseTable';
 
@@ -74,7 +74,7 @@ const Base = () => {
     };
 
     return (
-        <div style={{ padding: '24px', height: '100%' }}>
+        <Layout className="layout-content">
             <Card title="Таблица SU168">
                 <Table
                     className="width-97-5rem"
@@ -97,7 +97,7 @@ const Base = () => {
                     size="small"
                 />
             </Card>
-        </div>
+        </Layout>
     );
 };
 

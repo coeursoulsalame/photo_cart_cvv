@@ -14,6 +14,7 @@ import Base from "./components/base/Base";
 import { AuthProvider } from "./context/AuthContext";
 import PrivateRoute from "./components/auth/PrivateRoute";
 import Login from "./components/auth/Login";
+import HeatmapComponent from "./components/heatmap/Heatmap";
 
 const { Content } = Layout;
 
@@ -32,6 +33,7 @@ const App = () => {
                             <Route path="/repair" element={<PrivateRoute><Repair /></PrivateRoute>} />
                             <Route path="/service" element={<PrivateRoute><Service /></PrivateRoute>} />
                             <Route path="/base" element={<PrivateRoute><Base /></PrivateRoute>} />
+                            <Route path="/heatmap" element={<PrivateRoute><HeatmapComponent /></PrivateRoute>} />
                             <Route path="*" element={<Navigate to="/" replace />} />
                         </Routes>
                     </Content>

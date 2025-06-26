@@ -48,6 +48,10 @@ const Header = ({ hideOnPaths = [] }: HeaderProps) => {
             key: '/base',
             label: 'Данные',
         },
+        {
+            key: '/heatmap',
+            label: 'Тепловая карта',
+        },
     ];
 
     const userMenuItems: ItemType[] = [
@@ -60,7 +64,7 @@ const Header = ({ hideOnPaths = [] }: HeaderProps) => {
                         {user?.roleId === 1 ? 'Администратор' : 'Пользователь'}
                     </Text>
                     <Text type="secondary" style={{ fontSize: '12px' }}>
-                        <Text strong>Отдел: </Text>
+                        <Text strong>Площадка: {user?.locationName}</Text>
                     </Text>
                 </Space>
             ),

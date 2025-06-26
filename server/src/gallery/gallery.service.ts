@@ -1,26 +1,28 @@
 import { Injectable, HttpException, HttpStatus } from '@nestjs/common';
-import { ConfigService } from '@nestjs/config';
 import * as sharp from 'sharp';
 import { MinioHandler } from '../storage/handlers/minio-handler';
-import { PostgresHandler } from '../database/handlers/postgres-handler';
 import { RedisService } from '../cache/redis.service';
-import { PhotoResponse, GetPhotosResponse } from './gallery.dto';
+import { GetPhotosResponse, PhotoResponse } from './gallery.dto';
+import { DatabaseRouterService } from '../common/services/database-router.service';
 
 @Injectable()
 export class GalleryService {
     constructor(
-        private configService: ConfigService,
         private minioHandler: MinioHandler,
-        private postgresHandler: PostgresHandler,
+        private databaseRouter: DatabaseRouterService,
         private redisService: RedisService,
     ) {}
 
-    async getPhotos(query: { page: number; limit: number; startDate?: string; endDate?: string, showUnrecognizedOnly?: boolean }): Promise<GetPhotosResponse> {
+    async getPhotos(
+        query: { page: number; limit: number; startDate?: string; endDate?: string, showUnrecognizedOnly?: boolean },
+        locationId?: number,
+    ): Promise<GetPhotosResponse> {
         const page = parseInt(String(query.page));
         const limit = parseInt(String(query.limit));
         const offset = (page - 1) * limit;
 
         try {
+            const tableName = await this.databaseRouter.getTableName(locationId);
             let whereConditions: string[] = [];
             let filterParams: any[] = [];
             let paramIndex = 1;
@@ -50,8 +52,8 @@ export class GalleryService {
 
             const whereClause = whereConditions.length > 0 ? `WHERE ${whereConditions.join(' AND ')}` : '';
 
-            const countQuery = `SELECT COUNT(*) FROM su168 ${whereClause}`;
-            const countResult = await this.postgresHandler.queryMain(countQuery, filterParams);
+            const countQuery = `SELECT COUNT(*) FROM ${tableName} ${whereClause}`;
+            const countResult = await this.databaseRouter.queryPhotoTable(locationId, countQuery, filterParams);
             const totalCount = parseInt(countResult.rows[0].count);
             const totalPages = Math.ceil(totalCount / limit);
 
@@ -60,13 +62,13 @@ export class GalleryService {
             
             const dataQuery = `
                 SELECT id, date, file_name, detection, value, pred, confidence_score, valid_ai
-                FROM su168 
+                FROM ${tableName} 
                 ${whereClause}
                 ORDER BY date DESC 
                 LIMIT $${limitOffsetIndex} OFFSET $${limitOffsetIndex + 1}
             `;
             
-            const result = await this.postgresHandler.queryMain(dataQuery, dataParams);
+            const result = await this.databaseRouter.queryPhotoTable(locationId, dataQuery, dataParams);
             
             const photos: PhotoResponse[] = result.rows.map(data => ({
                 id: data.id,
@@ -96,7 +98,7 @@ export class GalleryService {
         }
     }
 
-    async getThumbnail(fileName: string): Promise<Buffer> {
+    async getThumbnail(fileName: string, locationId?: number): Promise<Buffer> {
         const cacheKey = `thumbnail:${fileName}`;
         
         try {
@@ -105,7 +107,7 @@ export class GalleryService {
                 return Buffer.from(cachedThumbnail, 'base64');
             }
 
-            const imageBuffer = await this.getPhotoBuffer(fileName);
+            const imageBuffer = await this.getPhotoBuffer(fileName, locationId);
             if (!imageBuffer) {
                 throw new HttpException('Photo not found', HttpStatus.NOT_FOUND);
             }
@@ -126,30 +128,16 @@ export class GalleryService {
         }
     }
 
-    private async getPhotoBuffer(fileName: string): Promise<Buffer | null> {
+    private async getPhotoBuffer(fileName: string, locationId?: number): Promise<Buffer | null> {
         try {
-            const minioClient = this.minioHandler.getClient();
-            const bucketName = this.configService.get('minio.bucketName');
-            
-            return new Promise<Buffer | null>((resolve) => {
-                (minioClient as any).getObject(bucketName, fileName, (err: any, dataStream: any) => {
-                    if (err) {
-                        if (err.code === 'NoSuchKey') {
-                            return resolve(null);
-                        }
-                        return resolve(null);
-                    }
-
-                    const buffers: Buffer[] = [];
-                    dataStream.on('data', (chunk: Buffer) => buffers.push(chunk));
-                    dataStream.on('end', () => {
-                        const buffer = Buffer.concat(buffers);
-                        resolve(buffer);
-                    });
-                    dataStream.on('error', () => {
-                        resolve(null);
-                    });
-                });
+            const minioClient = await this.minioHandler.getClient(locationId);
+            const bucketName = await this.minioHandler.getBucketName(locationId);
+            const dataStream = await minioClient.getObject(bucketName, fileName);
+            return new Promise<Buffer | null>((resolve, reject) => {
+                const buffers: Buffer[] = [];
+                dataStream.on('data', (chunk) => buffers.push(chunk));
+                dataStream.on('error', (err) => reject(err));
+                dataStream.on('end', () => resolve(Buffer.concat(buffers)));
             });
         } catch (error) {
             return null;
@@ -173,48 +161,28 @@ export class GalleryService {
         }
     }
 
-    async getPhoto(fileName: string): Promise<NodeJS.ReadableStream> {
+    async getPhoto(fileName: string, locationId?: number): Promise<NodeJS.ReadableStream> {
         try {
-            const minioClient = this.minioHandler.getClient();
-            const bucketName = this.configService.get('minio.bucketName') || 'photos';
-            
-            return new Promise<NodeJS.ReadableStream>((resolve, reject) => {
-                (minioClient as any).getObject(bucketName, fileName, (err: any, dataStream: any) => {
-                    if (err) {
-                        if (err.code === 'NoSuchKey') {
-                            reject(new HttpException(
-                                'Photo not found',
-                                HttpStatus.NOT_FOUND,
-                            ));
-                        } else {
-                            reject(new HttpException(
-                                'Failed to fetch photo',
-                                HttpStatus.INTERNAL_SERVER_ERROR,
-                            ));
-                        }
-                        return;
-                    }
-
-                    resolve(dataStream);
-                });
-            });
+            const minioClient = await this.minioHandler.getClient(locationId);
+            const bucketName = await this.minioHandler.getBucketName(locationId);
+            return minioClient.getObject(bucketName, fileName);
         } catch (error) {
-            throw new HttpException(
-                'Failed to fetch photo',
-                HttpStatus.INTERNAL_SERVER_ERROR,
-            );
+            throw new HttpException('Failed to fetch photo', HttpStatus.INTERNAL_SERVER_ERROR);
         }
     }
 
-    async handleNewPhoto(fileName: string): Promise<PhotoResponse | null> {
+    async handleNewPhoto(fileName: string, locationId: number): Promise<PhotoResponse | null> {
         try {
+            const tableName = await this.databaseRouter.getTableName(locationId);
+            if (!tableName) return null;
+
             const dataQuery = `
                 SELECT id, date, file_name, detection, value, pred, confidence_score, valid_ai
-                FROM su168 
+                FROM ${tableName} 
                 WHERE file_name = $1
             `;
             
-            const result = await this.postgresHandler.queryMain(dataQuery, [fileName]);
+            const result = await this.databaseRouter.queryPhotoTable(locationId, dataQuery, [fileName]);
             
             if (result.rows.length === 0) {
                 return null;
@@ -236,7 +204,7 @@ export class GalleryService {
             };
     
             try {
-                await this.getThumbnail(fileName);
+                await this.getThumbnail(fileName, locationId);
             } catch (error) {
             }
     
@@ -257,15 +225,16 @@ export class GalleryService {
         }
     }
 
-    async updateValue(id: number, value: string): Promise<{ success: boolean; message: string }> {
+    async updateValue(id: number, value: string, locationId?: number): Promise<{ success: boolean; message: string }> {
         try {
+            const tableName = await this.databaseRouter.getTableName(locationId);
             const updateQuery = `
-                UPDATE su168 
+                UPDATE ${tableName} 
                 SET value = $1, valid_ai = false 
                 WHERE id = $2
             `;
             
-            const result = await this.postgresHandler.queryMain(updateQuery, [value, id]);
+            const result = await this.databaseRouter.queryPhotoTable(locationId, updateQuery, [value, id]);
             
             if (result.rowCount === 0) {
                 throw new HttpException(
@@ -289,14 +258,15 @@ export class GalleryService {
         }
     }
 
-    async deletePhoto(id: number, fileName: string): Promise<{ success: boolean; message: string }> {
+    async deletePhoto(id: number, fileName: string, locationId?: number): Promise<{ success: boolean; message: string }> {
         try {
+            const tableName = await this.databaseRouter.getTableName(locationId);
             const deleteQuery = `
-                DELETE FROM su168 
+                DELETE FROM ${tableName} 
                 WHERE id = $1 AND file_name = $2
             `;
             
-            const result = await this.postgresHandler.queryMain(deleteQuery, [id, fileName]);
+            const result = await this.databaseRouter.queryPhotoTable(locationId, deleteQuery, [id, fileName]);
             
             if (result.rowCount === 0) {
                 throw new HttpException(
@@ -306,9 +276,9 @@ export class GalleryService {
             }
 
             try {
-                const minioClient = this.minioHandler.getClient();
-                const bucketName = this.configService.get('minio.bucketName');
-                await (minioClient as any).removeObject(bucketName, fileName);
+                const minioClient = await this.minioHandler.getClient(locationId);
+                const bucketName = await this.minioHandler.getBucketName(locationId);
+                await minioClient.removeObject(bucketName, fileName);
             } catch (minioError) {
                 console.error('Ошибка при удалении файла из Minio:', minioError);
             }

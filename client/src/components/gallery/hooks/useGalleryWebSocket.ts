@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { io } from 'socket.io-client';
 import type { Socket } from 'socket.io-client';
 import { PhotoResponse } from './useGallery';
+import { User } from '../../common/types/types';
 
 interface PhotoUpdateData {
     operation: 'UPDATE';
@@ -24,14 +25,20 @@ interface WebSocketEvents {
     onNewPhoto: (photoData: PhotoResponse) => void;
     onPhotoDeleted: (fileName: string) => void;
     onPhotoUpdated: (updateData: PhotoUpdateData) => void;
+    user: User | null;
 }
 
-const useGalleryWebSocket = ({ onNewPhoto, onPhotoDeleted, onPhotoUpdated }: WebSocketEvents) => {
+const useGalleryWebSocket = ({ onNewPhoto, onPhotoDeleted, onPhotoUpdated, user }: WebSocketEvents) => {
     const socketRef = useRef<Socket | null>(null);
     const [isConnected, setIsConnected] = useState(false);
 
     useEffect(() => {
+        if (!user?.locationId) {
+            return;
+        }
+
         socketRef.current = io('/gallery', {
+            query: { locationId: user.locationId },
             forceNew: true,
             reconnection: true,
             timeout: 5000,
@@ -82,7 +89,7 @@ const useGalleryWebSocket = ({ onNewPhoto, onPhotoDeleted, onPhotoUpdated }: Web
             socket.disconnect();
             setIsConnected(false);
         };
-    }, [onNewPhoto, onPhotoDeleted, onPhotoUpdated]);
+    }, [onNewPhoto, onPhotoDeleted, onPhotoUpdated, user]);
 
     return {
         isConnected

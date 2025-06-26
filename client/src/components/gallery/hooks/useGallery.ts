@@ -1,7 +1,8 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useContext } from 'react';
 import axios from 'axios';
 import useGalleryWebSocket from './useGalleryWebSocket';
 import { Dayjs } from 'dayjs';
+import AuthContext from '../../../context/AuthContext';
 
 export interface PhotoResponse {
     id: number;
@@ -38,6 +39,8 @@ const useGallery = ({ page = 1, limit = 100, dateRange, showUnrecognizedOnly = f
     const [hasMore, setHasMore] = useState(true);
     const [loading, setLoading] = useState(false);
     const [loadedPages, setLoadedPages] = useState<Set<number>>(new Set([page]));
+    const authContext = useContext(AuthContext);
+    const user = authContext?.auth.user || null;
 
     const handleNewPhoto = useCallback((photoData: PhotoResponse) => {
         setAllPhotos(prev => {
@@ -87,7 +90,8 @@ const useGallery = ({ page = 1, limit = 100, dateRange, showUnrecognizedOnly = f
     const { isConnected } = useGalleryWebSocket({
         onNewPhoto: handleNewPhoto,
         onPhotoDeleted: handlePhotoDeleted,
-        onPhotoUpdated: handlePhotoUpdated
+        onPhotoUpdated: handlePhotoUpdated,
+        user
     });
 
     const fetchPhotos = useCallback(async (pageToLoad: number, isLoadMore = false) => {
